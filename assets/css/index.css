@@ -1,0 +1,40 @@
+.cards {
+  max-width: 450px;
+}
+
+.box {
+  position: relative;
+  cursor: pointer;
+  width: 80px;
+  height: 80px;
+  transform-style: preserve-3d;
+  transition: 0.8s;
+}
+@media (min-width: 480px) {
+  .box {
+    width: 90px;
+    height: 90px;
+  }
+}
+@media (min-width: 540px) {
+  .box {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+.box .front,
+.box .back {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.box .back {
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+  z-index: 4;
+}
+
+.rotate {
+  transform: rotateY(180deg);
+}
