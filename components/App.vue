@@ -55,14 +55,11 @@
       </div>
     </div>
     <hr />
-    <h3 class="text-center">Tokens Collected: 2 </h3>
+    <h3 class="text-center">Tokens Collected: 2</h3>
     <div class="cards d-flex col-10 mx-auto flex-wrap">
-<div class=""
-v-for="(img, i) in cardsChosen" :key="`token-${i}`"
-
-> <img  :src="require(`../assets/images/${img}`)" alt=""/>
-</div>
-
+      <div class="" v-for="(img, i) in TokenUrlsOfUser" :key="`token-${i}`">
+        <img :src="require(`../assets/images/${img}`)" alt="" />
+      </div>
     </div>
   </div>
 </template>
@@ -83,27 +80,34 @@ export default {
   computed: {
     ...mapGetters(["CurrentAccount"]),
     ...mapGetters(["ChainId"]),
+    ...mapGetters(["TokenUrlsOfUser"]),
   },
   mounted() {
-    this.checkWalletIsConnected();
+    this.getALLTokenURIOfUser();
     this.sortarray();
   },
   methods: {
     ...mapActions(["checkWalletIsConnected"]),
     ...mapActions(["connectMetamask"]),
+    ...mapActions(["setTokenToBlockchain"]),
+    ...mapActions(["getTokenURIOfUser"]),
     sortarray() {
       this.cardArray = cardesData.sort(() => 0.5 - Math.random());
     },
-    async mint() {},
-
+async getALLTokenURIOfUser(){
+await this.checkWalletIsConnected();
+await this.getTokenURIOfUser();
+},
     async addClacCrotate(e, url) {
       if (this.pair.length < 2) {
+        await e.target.parentElement.classList.add("rotate");
         this.pair.push(url);
-        e.target.parentElement.classList.add("rotate");
-        if (this.pair[0] === this.pair[1]) {
-          await this.mint().then(() => {
-            this.cardsChosen.push(this.pair[0]);
-            this.pair = [];
+
+        if (this.pair[0] == this.pair[1]) {
+          this.cardsChosen.push(url);
+          this.pair = [];
+          await this.setTokenToBlockchain(url).then(async () => {
+            await this.getTokenURIOfUser()
           });
         }
       } else if (this.pair.length >= 2) {

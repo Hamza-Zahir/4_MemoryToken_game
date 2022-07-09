@@ -3,15 +3,16 @@ import AbiCcontract from "../json/abiContract.json";
 const state = {
   CurrentAccount: "",
   ChainId: "",
-  AllCandidates: [],
-  TotalElected: 0,
+  TokenUrlsOfUser: [],
+  TotalBalans: 0,
 };
 
 const getters = {
   CurrentAccount: (state) => state.CurrentAccount,
   ChainId: (state) => state.ChainId,
-  AllCandidates: (state) => state.AllCandidates,
-  TotalElected: (state) => state.TotalElected,
+  TokenUrlsOfUser: (state) => state.TokenUrlsOfUser,
+  TotalBalans: (state) => state.TotalBalans
+  ,
 };
 const actions = {
   async connectMetamask({ commit }) {
@@ -84,69 +85,57 @@ const actions = {
   },
   // ......................................
 
-  // async getCandidates({ commit }) {
-  //   let allCandidates = [];
-  //   let TotalElected = 0;
-  //   const ethereum = window.ethereum;
+  async getTokenURIOfUser({ commit }) {
+    let tokenurls = []
+    const _CurrentAccount = this.state.CurrentAccount;
+    const ethereum = window.ethereum;
+    if(ethereum && _CurrentAccount){
+    const web3 = new Web3(Web3.givenProvider || ethereum);
+    const MemoryToken_contract = new web3.eth.Contract(
+      AbiCcontract,
+      "0x5D514a6578A9e99cc212534bf134c76851608086"
+    );
 
-  //   if (ethereum) {
-  //     const web3 = new Web3(Web3.givenProvider || ethereum);
-  //     const Election_contract = new web3.eth.Contract(
-  //       AbiCcontract,
-  //       "0xCFe110057f2A5AcFBC8a891295e5584d9ee4d126"
-  //     );
-  //     const _candidatesCount = await Election_contract.methods
-  //       .candidatesCount()
-  //       .call();
 
-  //     for (let i = 1; i <= Number(_candidatesCount); i++) {
-  //       const _Candidate = await Election_contract.methods.candidates(i).call();
-  //       const _CandidateId = Number(_Candidate[0]);
-  //       const _CandidateName = _Candidate[1];
-  //       const _CandidateVoteCount = Number(_Candidate[2]);
-  //       TotalElected += Number(_Candidate[2]);
-  //       allCandidates.push({
-  //         CandidateId: _CandidateId,
-  //         CandidateName: _CandidateName,
-  //         CandidateVoteCount: _CandidateVoteCount,
-  //       });
-  //     }
-  //     commit("setAllCandidates", allCandidates);
-  //     commit("setTotalElected", TotalElected);
-  //   }
-  // },
-  // async Vote(state, CandidateId) {
-  //   const _CurrentAccount = this.state.CurrentAccount;
-  //   if (!_CurrentAccount) {
-  //     window.alert("Please connect to Metamask.");
-  //   } else if (!CandidateId) {
-  //     window.alert("Please Select Candidate.");
-  //   } else if (this.state.ChainId == 4) {
-  //     const ethereum = window.ethereum;
-  //     const web3 = new Web3(Web3.givenProvider || ethereum);
-  //     const Election_contract = new web3.eth.Contract(
-  //       AbiCcontract,
-  //       "0xCFe110057f2A5AcFBC8a891295e5584d9ee4d126"
-  //     );
-  //     const boll = await Election_contract.methods
-  //       .voters(_CurrentAccount)
-  //       .call();
-  //     if (boll) {
-  //       window.alert("Unfortunately, you can not vote more than once.");
-  //     } else {
-  //       await Election_contract.methods.vote(CandidateId).send({
-  //         from: _CurrentAccount,
-  //         gasLimit: 300000,
-  //       });
-  //     }
-  //   }
-  // },
+  const _balanceOfOner =  await MemoryToken_contract.methods.balanceOf(_CurrentAccount).call()
+    for (let i = 0; i < _balanceOfOner; i++) {
+    const id = await MemoryToken_contract.methods.tokenOfOwnerByIndex(_CurrentAccount, i).call()
+    const tokenURI = await MemoryToken_contract.methods.tokenURI(id).call()
+    tokenurls.push(tokenURI)
+
+    }
+
+      commit("setTokenUrlsOfUser", tokenurls)
+}
+  },
+  async setTokenToBlockchain(state, _tokenUrl) {
+    const _CurrentAccount = this.state.CurrentAccount;
+    const _ChainId = this.state.ChainId;
+    const ethereum = window.ethereum;
+
+    if (!_CurrentAccount) {
+      window.alert("pleas Connect To Metamask To get your Token");
+    } else if (_CurrentAccount && _ChainId != 4) {
+      window.alert("pleas change network");
+    } else {
+      const ethereum = window.ethereum;
+      const web3 = new Web3(Web3.givenProvider || ethereum);
+      const MemoryToken_contract = new web3.eth.Contract(
+        AbiCcontract,
+        "0x5D514a6578A9e99cc212534bf134c76851608086"
+      );
+      await MemoryToken_contract.methods.mint(_CurrentAccount, _tokenUrl).send({
+        from: _CurrentAccount,
+        gasLimit: 300000,
+      });
+    }
+  },
 };
 const mutations = {
   setCurrentAccount: (state, addres) => (state.CurrentAccount = addres),
   setChainId: (state, chainId) => (state.ChainId = chainId),
-  setAllCandidates: (state, array) => (state.AllCandidates = array),
-  setTotalElected: (state, num) => (state.TotalElected = num),
+  setTokenUrlsOfUser: (state, array) => (state.TokenUrlsOfUser = array),
+  setTotalBalans: (state, num) => (state.TotalBalans = num),
 };
 
 export default {
