@@ -33,7 +33,7 @@
             @click="
               (e) => {
                 if (!cardsChosen.includes(box.img)) {
-                  addClacCrotate(e, box.img);
+                  SelectCards(e, box.img, i);
                 }
               }
             "
@@ -75,6 +75,7 @@ export default {
       cardArray: cardesData,
       pair: [],
       cardsChosen: [],
+      selectId: "",
     };
   },
   computed: {
@@ -94,33 +95,44 @@ export default {
     sortarray() {
       this.cardArray = cardesData.sort(() => 0.5 - Math.random());
     },
-async getALLTokenURIOfUser(){
-await this.checkWalletIsConnected();
-await this.getTokenURIOfUser();
-},
-    async addClacCrotate(e, url) {
-      if (this.pair.length < 2) {
-        await e.target.parentElement.classList.add("rotate");
-        this.pair.push(url);
+    async getALLTokenURIOfUser() {
+      await this.checkWalletIsConnected();
+      await this.getTokenURIOfUser();
+    },
 
-        if (this.pair[0] == this.pair[1]) {
-          this.cardsChosen.push(url);
-          this.pair = [];
-          await this.setTokenToBlockchain(url).then(async () => {
-            await this.getTokenURIOfUser()
-          });
-        }
-      } else if (this.pair.length >= 2) {
+    async SetTokenToBlockchain(url) {
+      if (this.pair[0] === this.pair[1]) {
+  this.cardsChosen.push(url);
         this.pair = [];
-        this.pair.push(url);
-        const allBoxs = document.querySelectorAll(".box");
-        allBoxs.forEach((el) => {
-          el.classList.remove("rotate");
+        await this.setTokenToBlockchain(url)
+        .then(async () => {
+          await this.getTokenURIOfUser();
         });
-        e.target.parentElement.classList.add("rotate");
+      }
+    },
+
+    async SelectCards(e, url, id) {
+      if (this.selectId !== id) {
+        if (this.pair.length < 2) {
+          await e.target.parentElement.classList.add("rotate");
+          this.pair.push(url);
+          this.selectId = id;
+          await this.SetTokenToBlockchain(url);
+
+    
+        } else if (this.pair.length >= 2) {
+          this.pair = [];
+          this.pair.push(url);
+          this.selectId = id;
+          const allBoxs = document.querySelectorAll(".box");
+          allBoxs.forEach((el) => {
+            el.classList.remove("rotate");
+          });
+          e.target.parentElement.classList.add("rotate");
+        }
       }
     },
   },
 };
 </script>
-<style scoped></style>
+
